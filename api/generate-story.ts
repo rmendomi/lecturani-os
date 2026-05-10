@@ -44,9 +44,9 @@ El adulto lee TODO el texto sin parar. Algunas palabras dentro de cada párrafo 
 REGLAS OBLIGATORIAS:
 1. USA SOLO reader:"adult". NUNCA uses reader:"child" ni reader:"shared".
 2. Cada bloque es un párrafo narrativo rico que el adulto lee completo, con 3 a 5 oraciones (entre 50 y 90 palabras). Describe el ambiente, los personajes, sus emociones y acciones con detalle y viveza para que el niño pueda imaginar la escena.
-3. En cada bloque marca entre 2 y 5 palabras CONSECUTIVAS como childWords — deben ser una frase CON CONTENIDO que el niño pueda visualizar e imaginar (ejemplos buenos: "dinosaurio azul", "olas gigantes", "saltó muy alto", "brillaba con fuerza", "pequeño robot valiente"). El niño las lee todas juntas de corrido. Estas palabras DEBEN aparecer juntas y EXACTAMENTE igual en el campo text del mismo bloque.
+3. En cada bloque marca EXACTAMENTE DOS grupos separados de palabras del niño dentro del mismo párrafo. Cada grupo es una secuencia de 2 a 4 palabras CONSECUTIVAS en el texto. Los dos grupos deben estar separados por texto del adulto (no pueden ser adyacentes). Todos los childWords (de ambos grupos) van en el mismo array. Ejemplo: si el texto tiene "...un dragón enorme... saltó muy alto..." los childWords serían ["dragón", "enorme", "saltó", "alto"] — cuatro palabras en el array que forman dos frases separadas en el texto.
 4. PROHIBIDO usar como childWords: artículos solos (el, la, los, las, un, una), preposiciones (de, en, a, por, con, para), conjunciones (y, o, pero, que), ni combinaciones que sean SOLO conectores sin sustantivo/verbo/adjetivo. Cada frase del niño DEBE contener al menos un sustantivo, adjetivo o verbo con significado concreto. Elige palabras apropiadas al nivel (${data.readingLevel}).
-5. No todos los bloques necesitan childWords — algunos pueden tener childWords vacío.
+5. TODOS los bloques deben tener childWords. El array nunca puede estar vacío.
 6. syllableSupport: un string por cada childWord con las sílabas separadas por guion (ejemplo: "lu-na", "ca-sa", "ro-bot").
 7. hint: pista corta y amable para si el niño necesita ayuda con la frase.
 8. El cuento debe tener entre 5 y 7 bloques. Cada bloque es una "página" del cuento con una escena completa y evocadora.
@@ -62,24 +62,24 @@ ESTRUCTURA JSON — EJEMPLO (con bloques largos y descriptivos):
   "blocks": [
     {
       "reader": "adult",
-      "text": "En lo más alto de una montaña cubierta de nieve y nubes blancas, vivía un pequeño robot llamado Tito. Sus ojos brillaban como lunas y sus pies eran de madera crujiente. Cada mañana se asomaba a la ventana de su casita de metal y miraba el mundo de allá abajo, tan verde y tan vivo, con una sonrisa llena de curiosidad.",
-      "childWords": ["pequeño", "robot"],
-      "syllableSupport": ["pe-que-ño", "ro-bot"],
-      "hint": "¿Cómo se llama el personaje? ¡Léelo juntos!"
+      "text": "En lo más alto de una montaña cubierta de nieve y nubes blancas, vivía un pequeño robot llamado Tito. Sus ojos brillaban como lunas y sus pies eran de madera crujiente. Cada mañana se asomaba a la ventana de su casita de metal y miraba el mundo de allá abajo, tan verde y tan vivo, con una sonrisa brillante y curiosa.",
+      "childWords": ["pequeño", "robot", "sonrisa", "brillante"],
+      "syllableSupport": ["pe-que-ño", "ro-bot", "son-ri-sa", "bri-llan-te"],
+      "hint": "¡Dos frases para leer juntos en esta página!"
     },
     {
       "reader": "adult",
-      "text": "Una tarde nublada, Tito escuchó un sonido extraño entre los árboles del bosque. Era un lloriqueo suave, como el viento que susurra secretos. Con pasos cuidadosos bajó por el sendero de piedras y encontró a una niña sentada junto a un árbol enorme, con las rodillas abrazadas y los ojos muy tristes.",
-      "childWords": ["árbol", "enorme"],
-      "syllableSupport": ["ár-bol", "e-nor-me"],
-      "hint": "¿Qué tan grande era el árbol?"
+      "text": "Una tarde nublada, Tito escuchó un sonido extraño entre los árboles del bosque. Era un lloriqueo suave, como el viento que susurra secretos. Con pasos muy cuidadosos bajó por el sendero de piedras y encontró a una niña sentada junto a un árbol enorme, con los ojos tristes.",
+      "childWords": ["pasos", "cuidadosos", "árbol", "enorme"],
+      "syllableSupport": ["pa-sos", "cui-da-do-sos", "ár-bol", "e-nor-me"],
+      "hint": "¿Cómo caminaba Tito? ¿Qué encontró?"
     },
     {
       "reader": "adult",
-      "text": "La niña se llamaba Sofía y se había perdido buscando flores para su abuela. Tito la miró con ternura y le ofreció su mano de metal, que brillaba como un espejo bajo la luz de la tarde. Juntos comenzaron a caminar por el bosque, cantando una canción que Tito había inventado para espantar el miedo.",
-      "childWords": ["flores", "coloridas"],
-      "syllableSupport": ["flo-res", "co-lo-ri-das"],
-      "hint": "¿Qué buscaba la niña?"
+      "text": "La niña se llamaba Sofía y se había perdido buscando flores para su abuela. Tito la miró con ternura y le ofreció su mano de metal, que brillaba como un espejo bajo la luz de la tarde. Juntos comenzaron a caminar por el bosque cantando una canción inventada.",
+      "childWords": ["flores", "coloridas", "mano", "brillante"],
+      "syllableSupport": ["flo-res", "co-lo-ri-das", "ma-no", "bri-llan-te"],
+      "hint": "¿Qué buscaba ella? ¿Qué le ofreció Tito?"
     }
   ],
   "questions": [
