@@ -112,7 +112,7 @@ function ReadingContent({ story, child, userId }: ReadingContentProps) {
           {isChildBlock && showHint && syllablesForWord && syllablesForWord.length > 0 && (
             <div className="bg-yellow-50 border border-yellow-200 rounded-2xl px-4 py-3">
               <p className="text-xl text-yellow-800 font-bold tracking-widest text-center">
-                {syllablesForWord.join(' · ')}
+                {syllablesForWord.map(s => s.replace(/-/g, ' · ')).join('  ')}
               </p>
             </div>
           )}
