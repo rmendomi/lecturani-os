@@ -43,18 +43,18 @@ El adulto lee TODO el texto sin parar. Algunas palabras dentro de cada párrafo 
 
 REGLAS OBLIGATORIAS:
 1. USA SOLO reader:"adult". NUNCA uses reader:"child" ni reader:"shared".
-2. Cada bloque es un párrafo o frase que el adulto lee completo.
+2. Cada bloque es un párrafo narrativo rico que el adulto lee completo, con 3 a 5 oraciones (entre 50 y 90 palabras). Describe el ambiente, los personajes, sus emociones y acciones con detalle y viveza para que el niño pueda imaginar la escena.
 3. En cada bloque puedes marcar 1 o 2 palabras como childWords. Estas palabras DEBEN aparecer EXACTAMENTE igual en el campo text del mismo bloque.
 4. Elige childWords adecuadas al nivel del niño (${data.readingLevel}).
 5. No todos los bloques necesitan childWords — algunos pueden tener childWords vacío.
 6. syllableSupport: un string por cada childWord con las sílabas separadas por guion (ejemplo: "lu-na", "ca-sa", "ro-bot").
 7. hint: pista corta y amable para si el niño necesita ayuda con esa palabra.
-8. El cuento debe tener entre 6 y 10 bloques.
-9. El cuento debe ser cálido, entretenido y apropiado para la edad.
+8. El cuento debe tener entre 5 y 7 bloques. Cada bloque es una "página" del cuento con una escena completa y evocadora.
+9. El cuento debe ser cálido, entretenido, lleno de imágenes mentales y apropiado para la edad.
 10. Incluye EXACTAMENTE 3 preguntas de comprensión al final.
 11. DEVUELVE SOLO JSON VÁLIDO, sin markdown, sin texto adicional.
 
-ESTRUCTURA JSON — EJEMPLO:
+ESTRUCTURA JSON — EJEMPLO (con bloques largos y descriptivos):
 {
   "title": "El robot de la montaña",
   "objective": "Practicar lectura de palabras simples dentro de texto continuo",
@@ -62,37 +62,30 @@ ESTRUCTURA JSON — EJEMPLO:
   "blocks": [
     {
       "reader": "adult",
-      "text": "En lo alto de la montaña vivía un pequeño robot.",
+      "text": "En lo más alto de una montaña cubierta de nieve y nubes blancas, vivía un pequeño robot llamado Tito. Sus ojos brillaban como lunas y sus pies eran de madera crujiente. Cada mañana se asomaba a la ventana de su casita de metal y miraba el mundo de allá abajo, tan verde y tan vivo, con una sonrisa llena de curiosidad.",
       "childWords": ["robot"],
       "syllableSupport": ["ro-bot"],
       "hint": "Empieza con ro... ¿puedes seguir?"
     },
     {
       "reader": "adult",
-      "text": "Tenía ojos de luna y pies de madera.",
-      "childWords": ["luna"],
-      "syllableSupport": ["lu-na"],
-      "hint": "Lu... na. ¡Dilo despacio!"
-    },
-    {
-      "reader": "adult",
-      "text": "Cada noche salía a mirar las estrellas del cielo.",
-      "childWords": [],
-      "syllableSupport": [],
-      "hint": ""
-    },
-    {
-      "reader": "adult",
-      "text": "Un día encontró a una niña perdida en el bosque.",
+      "text": "Una tarde nublada, Tito escuchó un sonido extraño entre los árboles del bosque. Era un lloriqueo suave, como el viento que susurra secretos. Con pasos cuidadosos bajó por el sendero de piedras y encontró a una niña sentada junto a un árbol enorme, con las rodillas abrazadas y los ojos muy tristes.",
       "childWords": ["niña"],
       "syllableSupport": ["ni-ña"],
       "hint": "Empieza con ni..."
+    },
+    {
+      "reader": "adult",
+      "text": "La niña se llamaba Sofía y se había perdido buscando flores para su abuela. Tito la miró con ternura y le ofreció su mano de metal, que brillaba como un espejo bajo la luz de la tarde. Juntos comenzaron a caminar por el bosque, cantando una canción que Tito había inventado para espantar el miedo.",
+      "childWords": ["luna"],
+      "syllableSupport": ["lu-na"],
+      "hint": "Lu... na. ¡Dilo despacio!"
     }
   ],
   "questions": [
-    { "question": "¿Dónde vivía el robot?", "answer": "En lo alto de la montaña" },
-    { "question": "¿Qué hacía el robot cada noche?", "answer": "Miraba las estrellas" },
-    { "question": "¿A quién encontró en el bosque?", "answer": "A una niña perdida" }
+    { "question": "¿Dónde vivía el robot Tito?", "answer": "En lo alto de una montaña" },
+    { "question": "¿Por qué estaba perdida la niña?", "answer": "Buscaba flores para su abuela" },
+    { "question": "¿Qué hicieron juntos por el bosque?", "answer": "Caminaron cantando una canción" }
   ],
   "recommendation": "Consejo breve para seguir practicando en casa."
 }`
@@ -108,7 +101,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const message = await client.messages.create({
       model: 'claude-opus-4-7',
-      max_tokens: 4096,
+      max_tokens: 8192,
       messages: [
         {
           role: 'user',

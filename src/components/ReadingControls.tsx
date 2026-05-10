@@ -1,4 +1,4 @@
-import { CheckCircle, HelpCircle, SkipForward, ChevronRight, Lightbulb } from 'lucide-react'
+import { CheckCircle, HelpCircle, RotateCcw, ChevronRight, Lightbulb } from 'lucide-react'
 
 interface ReadingControlsProps {
   isChildTurn: boolean
@@ -30,21 +30,21 @@ export function ReadingControls({
             className="flex flex-col items-center gap-1.5 py-4 rounded-2xl bg-primary text-white font-semibold text-sm shadow-button active:scale-95 transition-all"
           >
             <CheckCircle className="w-6 h-6" />
-            Lo leyó bien
+            Correcto
           </button>
           <button
             onClick={onWordHelp}
             className="flex flex-col items-center gap-1.5 py-4 rounded-2xl bg-yellow-400 text-yellow-900 font-semibold text-sm active:scale-95 transition-all"
           >
             <HelpCircle className="w-6 h-6" />
-            Con ayuda
+            Casi bien
           </button>
           <button
             onClick={onWordSkip}
             className="flex flex-col items-center gap-1.5 py-4 rounded-2xl bg-neutral-200 text-neutral-600 font-semibold text-sm active:scale-95 transition-all"
           >
-            <SkipForward className="w-6 h-6" />
-            Saltar
+            <RotateCcw className="w-6 h-6" />
+            Repetir
           </button>
         </div>
         <button
@@ -56,7 +56,7 @@ export function ReadingControls({
           }`}
         >
           <Lightbulb className="w-4 h-4" />
-          {showHint ? 'Ocultar pista' : 'Mostrar pista'}
+          {showHint ? 'Ocultar sílabas' : 'Ver sílabas'}
         </button>
       </div>
     )

@@ -7,30 +7,31 @@ interface WordHighlightProps {
 }
 
 export function WordHighlight({ word, isActive, isChildWord, isRead, isMicActive }: WordHighlightProps) {
-  let className = 'inline-block transition-all duration-200 rounded px-0.5 mx-0.5 '
+  // Tamaño y peso fijos por tipo — nunca cambian al activarse (evita reflow)
+  const baseClass = isChildWord
+    ? 'text-reading-lg font-black'
+    : 'text-reading-md font-normal'
 
+  let stateClass: string
   if (isActive && isChildWord) {
-    // Palabra del niño activa: grande, resaltada, llamativa
-    className += 'bg-child/25 text-child font-black text-reading-xl underline decoration-2 scale-110 shadow-sm'
+    stateClass = 'bg-child/25 text-child rounded'
   } else if (isActive && isMicActive) {
-    // Palabra del adulto activa con micrófono
-    className += 'bg-primary text-white font-bold text-reading-lg px-2 py-0.5 rounded-lg scale-105 shadow-sm'
+    stateClass = 'bg-primary text-white rounded'
   } else if (isActive) {
-    // Palabra activa sin micrófono
-    className += 'bg-current/60 text-neutral-800 font-semibold text-reading-md rounded-lg'
+    stateClass = 'bg-neutral-200 text-neutral-900 rounded'
   } else if (isChildWord && isRead) {
-    // Palabra del niño ya leída
-    className += 'text-child/50 font-bold text-reading-lg underline decoration-1'
+    stateClass = 'text-child/50 underline decoration-1'
   } else if (isRead) {
-    // Palabra del adulto ya leída
-    className += 'text-neutral-400 text-reading-md'
+    stateClass = 'text-neutral-400'
   } else if (isChildWord) {
-    // Palabra del niño próxima: más grande y subrayada para que el niño la anticipe
-    className += 'text-child font-black text-reading-lg underline decoration-2 underline-offset-2'
+    stateClass = 'text-child underline decoration-2 underline-offset-2'
   } else {
-    // Palabra del adulto próxima
-    className += 'text-neutral-700 text-reading-md'
+    stateClass = 'text-neutral-700'
   }
 
-  return <span className={className}>{word} </span>
+  return (
+    <span className={`inline-block px-0.5 mx-0.5 transition-colors duration-150 ${baseClass} ${stateClass}`}>
+      {word}{' '}
+    </span>
+  )
 }

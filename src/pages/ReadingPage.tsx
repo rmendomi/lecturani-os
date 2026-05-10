@@ -1,14 +1,15 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { X, Mic, MicOff } from 'lucide-react'
+import { X, Mic, MicOff, Music2, VolumeX } from 'lucide-react'
 import { AppShell } from '@/components/AppShell'
 import { ReadingKaraoke } from '@/components/ReadingKaraoke'
 import { ReadingControls } from '@/components/ReadingControls'
 import { SessionSummary } from '@/components/SessionSummary'
-
+import { StoryImage, buildImageUrl } from '@/components/StoryImage'
 import { LoadingState } from '@/components/LoadingState'
 import { useReadingSession } from '@/hooks/useReadingSession'
 import { useSpeechRecognition } from '@/hooks/useSpeechRecognition'
+import { useAmbientMusic } from '@/hooks/useAmbientMusic'
 import { getStoryWithBlocks } from '@/services/storiesService'
 import { getChild } from '@/services/childrenService'
 import { useAuth } from '@/contexts/AuthContext'
@@ -24,6 +25,7 @@ function ReadingContent({ story, child, userId }: ReadingContentProps) {
   const navigate = useNavigate()
   const session = useReadingSession(story, story.child_id, userId)
   const [sessionStarted, setSessionStarted] = useState(false)
+  const music = useAmbientMusic(story.theme)
 
   useEffect(() => {
     if (!sessionStarted) {
@@ -32,7 +34,7 @@ function ReadingContent({ story, child, userId }: ReadingContentProps) {
     }
   }, [sessionStarted, session])
 
-  const { currentBlock, currentWordIndex, isChildBlock, isChildTurn, showHint, setShowHint } = session
+  const { currentBlock, currentWordIndex, isChildTurn, showHint, setShowHint } = session
 
   const blockWords = currentBlock?.text.split(/\s+/).filter(Boolean) ?? []
   const currentWord = blockWords[currentWordIndex] ?? ''
@@ -42,7 +44,7 @@ function ReadingContent({ story, child, userId }: ReadingContentProps) {
   const { isListening, isSupported, toggle: toggleMic } = useSpeechRecognition(
     session.handleNext,
     currentWord,
-    !isChildBlock && !session.isComplete
+    !isChildTurn && !session.isComplete
   )
 
   if (session.isComplete && session.summary) {
@@ -58,39 +60,65 @@ function ReadingContent({ story, child, userId }: ReadingContentProps) {
   if (!currentBlock) return <LoadingState />
 
   const childName = child?.name ?? 'tu niño'
+  const nextBlock = story.blocks[session.currentBlockIndex + 1]
 
   return (
     <AppShell hideNav>
       <div className="min-h-screen flex flex-col">
+        {/* Header */}
         <div className="flex items-center justify-between px-5 pt-6 pb-4">
           <div className="flex-1">
             <p className="text-xs text-neutral-400 font-medium">Leyendo con</p>
             <p className="font-bold text-neutral-800">{childName}</p>
           </div>
-          {isSupported && (
+
+          <div className="flex items-center gap-2">
+            {/* Botón música */}
             <button
-              onClick={toggleMic}
+              onClick={music.toggle}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
-                isListening
-                  ? 'bg-primary text-white shadow-button'
+                music.isPlaying
+                  ? 'bg-accent text-primary shadow-button'
                   : 'bg-white text-neutral-400 shadow-card'
               }`}
+              title={music.isPlaying ? 'Pausar música' : 'Activar música'}
             >
-              {isListening
-                ? <Mic className="w-3.5 h-3.5 animate-pulse" />
-                : <MicOff className="w-3.5 h-3.5" />
+              {music.isPlaying
+                ? <Music2 className="w-3.5 h-3.5 animate-pulse" />
+                : <VolumeX className="w-3.5 h-3.5" />
               }
-              {isListening ? 'Escuchando' : 'Micrófono'}
+              {music.isPlaying ? 'Música' : 'Silencio'}
             </button>
-          )}
-          <button
-            onClick={() => navigate(-1)}
-            className="ml-2 w-10 h-10 flex items-center justify-center rounded-2xl bg-white shadow-card"
-          >
-            <X className="w-5 h-5 text-neutral-400" />
-          </button>
+
+            {/* Botón micrófono */}
+            {isSupported && (
+              <button
+                onClick={toggleMic}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
+                  isListening
+                    ? 'bg-primary text-white shadow-button'
+                    : 'bg-white text-neutral-400 shadow-card'
+                }`}
+              >
+                {isListening
+                  ? <Mic className="w-3.5 h-3.5 animate-pulse" />
+                  : <MicOff className="w-3.5 h-3.5" />
+                }
+                {isListening ? 'Escuchando' : 'Micrófono'}
+              </button>
+            )}
+
+            {/* Botón cerrar */}
+            <button
+              onClick={() => navigate(-1)}
+              className="w-10 h-10 flex items-center justify-center rounded-2xl bg-white shadow-card"
+            >
+              <X className="w-5 h-5 text-neutral-400" />
+            </button>
+          </div>
         </div>
 
+        {/* Barra de progreso */}
         <div className="px-5 mb-2">
           <h2 className="text-sm font-bold text-neutral-600 line-clamp-1">{story.title}</h2>
           <div className="mt-1.5 h-1.5 bg-neutral-100 rounded-full overflow-hidden">
@@ -101,15 +129,22 @@ function ReadingContent({ story, child, userId }: ReadingContentProps) {
           </div>
         </div>
 
+        {/* Contenido principal */}
         <div className="flex-1 px-5 py-3 space-y-4 overflow-y-auto">
+          {/* Ilustración del bloque actual */}
+          <StoryImage
+            text={currentBlock.text}
+            seed={session.currentBlockIndex}
+          />
+
           <ReadingKaraoke
             block={currentBlock}
             activeWordIndex={currentWordIndex}
             readWordCount={currentWordIndex}
-            isMicActive={isListening && !isChildBlock}
+            isMicActive={isListening && !isChildTurn}
           />
 
-          {isChildBlock && showHint && syllablesForWord && syllablesForWord.length > 0 && (
+          {isChildTurn && showHint && syllablesForWord && syllablesForWord.length > 0 && (
             <div className="bg-yellow-50 border border-yellow-200 rounded-2xl px-4 py-3">
               <p className="text-xl text-yellow-800 font-bold tracking-widest text-center">
                 {syllablesForWord.map(s => s.replace(/-/g, ' · ')).join('  ')}
@@ -117,19 +152,19 @@ function ReadingContent({ story, child, userId }: ReadingContentProps) {
             </div>
           )}
 
-          {isChildBlock && currentBlock.hint && !showHint && (
+          {isChildTurn && !showHint && (
             <div className="bg-neutral-50 rounded-2xl px-4 py-3">
               <p className="text-xs text-neutral-400 font-medium text-center">
-                Pídele a {childName} que lea la palabra resaltada
+                Pídele a {childName} que diga la palabra resaltada junto a ti
               </p>
             </div>
           )}
 
-          {!isChildBlock && currentBlock.reader === 'adult' && (
+          {!isChildTurn && (
             <div className="bg-neutral-50 rounded-2xl px-4 py-3">
               <p className="text-xs text-neutral-400 font-medium">
                 {isListening
-                  ? `🎤 El texto avanza automáticamente — las palabras resaltadas las dicen juntos`
+                  ? `🎤 El texto avanza automáticamente con el micrófono`
                   : `Lee en voz alta para ${childName} — activa el micrófono para avance automático`
                 }
               </p>
@@ -137,6 +172,17 @@ function ReadingContent({ story, child, userId }: ReadingContentProps) {
           )}
         </div>
 
+        {/* Preload de la siguiente imagen */}
+        {nextBlock && (
+          <img
+            src={buildImageUrl(nextBlock.text, session.currentBlockIndex + 1)}
+            alt=""
+            className="hidden"
+            aria-hidden
+          />
+        )}
+
+        {/* Controles */}
         <div className="px-5 pb-8 pt-4 space-y-3">
           <ReadingControls
             isChildTurn={isChildTurn}

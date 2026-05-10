@@ -33,7 +33,12 @@ export function useReadingSession(story: StoryWithBlocks, childId: string, userI
   const isLastWordInBlock = currentWordIndex >= blockWords.length - 1
   const isLastBlock = currentBlockIndex >= story.blocks.length - 1
 
-  const isChildTurn = isChildBlock
+  const currentWordClean = blockWords[currentWordIndex]?.replace(/[.,!?;:]/g, '').toLowerCase() ?? ''
+  const childWordsSet = new Set((currentBlock?.child_words ?? []).map(w => w.toLowerCase()))
+  const isCurrentWordChildWord = childWordsSet.size > 0 && childWordsSet.has(currentWordClean)
+
+  // isChildTurn: true para bloques legacy reader:'child' O cuando la palabra activa es del niño
+  const isChildTurn = isChildBlock || isCurrentWordChildWord
 
   const start = useCallback(async () => {
     const session = await createSession(userId, childId, story.id)
@@ -106,28 +111,28 @@ export function useReadingSession(story: StoryWithBlocks, childId: string, userI
   }, [])
 
   const handleWordOk = useCallback(async () => {
-    if (!sessionIdRef.current || !currentBlock || !isChildBlock) return
+    if (!sessionIdRef.current || !currentBlock || !isChildTurn) return
     const word = blockWords[currentWordIndex]
     attemptsRef.current.push({ word, status: 'ok', hintUsed: showHint })
     await recordWordAttempt(sessionIdRef.current, word, 'ok', showHint)
     advanceWord(isLastWordInBlock, isLastBlock)
-  }, [currentBlock, isChildBlock, blockWords, currentWordIndex, showHint, advanceWord, isLastWordInBlock, isLastBlock])
+  }, [currentBlock, isChildTurn, blockWords, currentWordIndex, showHint, advanceWord, isLastWordInBlock, isLastBlock])
 
   const handleWordHelp = useCallback(async () => {
-    if (!sessionIdRef.current || !currentBlock || !isChildBlock) return
+    if (!sessionIdRef.current || !currentBlock || !isChildTurn) return
     const word = blockWords[currentWordIndex]
     attemptsRef.current.push({ word, status: 'help', hintUsed: showHint })
     await recordWordAttempt(sessionIdRef.current, word, 'help', showHint)
     advanceWord(isLastWordInBlock, isLastBlock)
-  }, [currentBlock, isChildBlock, blockWords, currentWordIndex, showHint, advanceWord, isLastWordInBlock, isLastBlock])
+  }, [currentBlock, isChildTurn, blockWords, currentWordIndex, showHint, advanceWord, isLastWordInBlock, isLastBlock])
 
   const handleWordSkip = useCallback(async () => {
-    if (!sessionIdRef.current || !currentBlock || !isChildBlock) return
+    if (!sessionIdRef.current || !currentBlock || !isChildTurn) return
     const word = blockWords[currentWordIndex]
     attemptsRef.current.push({ word, status: 'skipped', hintUsed: showHint })
     await recordWordAttempt(sessionIdRef.current, word, 'skipped', showHint)
     advanceWord(isLastWordInBlock, isLastBlock)
-  }, [currentBlock, isChildBlock, blockWords, currentWordIndex, showHint, advanceWord, isLastWordInBlock, isLastBlock])
+  }, [currentBlock, isChildTurn, blockWords, currentWordIndex, showHint, advanceWord, isLastWordInBlock, isLastBlock])
 
   const handleNext = useCallback(() => {
     advanceWord(isLastWordInBlock, isLastBlock)
@@ -139,6 +144,7 @@ export function useReadingSession(story: StoryWithBlocks, childId: string, userI
     currentWordIndex,
     isChildBlock,
     isChildTurn,
+    isCurrentWordChildWord,
     isLastBlock,
     showHint,
     setShowHint,
