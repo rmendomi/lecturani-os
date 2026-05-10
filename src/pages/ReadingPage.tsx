@@ -5,43 +5,14 @@ import { AppShell } from '@/components/AppShell'
 import { ReadingKaraoke } from '@/components/ReadingKaraoke'
 import { ReadingControls } from '@/components/ReadingControls'
 import { SessionSummary } from '@/components/SessionSummary'
+
 import { LoadingState } from '@/components/LoadingState'
 import { useReadingSession } from '@/hooks/useReadingSession'
 import { useSpeechRecognition } from '@/hooks/useSpeechRecognition'
 import { getStoryWithBlocks } from '@/services/storiesService'
 import { getChild } from '@/services/childrenService'
 import { useAuth } from '@/contexts/AuthContext'
-import type { StoryWithBlocks, ChildProfile, StoryBlock } from '@/types/database'
-
-function ChildWordCard({ block, showHint, childName }: {
-  block: StoryBlock
-  showHint: boolean
-  childName: string
-}) {
-  const childWords = block.child_words ?? []
-  const primaryWord = childWords[0] ?? block.text
-  const syllableSupport = block.syllable_support
-  const syllables = syllableSupport ? Object.values(syllableSupport).flat() : []
-
-  return (
-    <div className="bg-child/10 border-2 border-child/30 rounded-3xl p-5 space-y-3">
-      <p className="text-xs font-bold text-child">Turno de {childName}</p>
-      <div className="text-center">
-        <p className="text-5xl font-black text-neutral-800 tracking-wide">{primaryWord}</p>
-        {syllables.length > 0 && (
-          <p className="text-2xl text-neutral-400 mt-2 tracking-widest">
-            {syllables.join(' · ')}
-          </p>
-        )}
-      </div>
-      {showHint && block.hint && (
-        <div className="bg-yellow-50 border border-yellow-200 rounded-2xl px-4 py-3">
-          <p className="text-sm text-yellow-800">💡 {block.hint}</p>
-        </div>
-      )}
-    </div>
-  )
-}
+import type { StoryWithBlocks, ChildProfile } from '@/types/database'
 
 interface ReadingContentProps {
   story: StoryWithBlocks
@@ -65,6 +36,8 @@ function ReadingContent({ story, child, userId }: ReadingContentProps) {
 
   const blockWords = currentBlock?.text.split(/\s+/).filter(Boolean) ?? []
   const currentWord = blockWords[currentWordIndex] ?? ''
+  const currentWordClean = currentWord.replace(/[.,!?;:]/g, '').toLowerCase()
+  const syllablesForWord = currentBlock?.syllable_support?.[currentWordClean] ?? null
 
   const { isListening, isSupported, toggle: toggleMic } = useSpeechRecognition(
     session.handleNext,
@@ -129,15 +102,27 @@ function ReadingContent({ story, child, userId }: ReadingContentProps) {
         </div>
 
         <div className="flex-1 px-5 py-3 space-y-4 overflow-y-auto">
-          {isChildBlock ? (
-            <ChildWordCard block={currentBlock} showHint={showHint} childName={childName} />
-          ) : (
-            <ReadingKaraoke
-              block={currentBlock}
-              activeWordIndex={currentWordIndex}
-              readWordCount={currentWordIndex}
-              isMicActive={isListening}
-            />
+          <ReadingKaraoke
+            block={currentBlock}
+            activeWordIndex={currentWordIndex}
+            readWordCount={currentWordIndex}
+            isMicActive={isListening && !isChildBlock}
+          />
+
+          {isChildBlock && showHint && syllablesForWord && syllablesForWord.length > 0 && (
+            <div className="bg-yellow-50 border border-yellow-200 rounded-2xl px-4 py-3">
+              <p className="text-xl text-yellow-800 font-bold tracking-widest text-center">
+                {syllablesForWord.join(' · ')}
+              </p>
+            </div>
+          )}
+
+          {isChildBlock && currentBlock.hint && !showHint && (
+            <div className="bg-neutral-50 rounded-2xl px-4 py-3">
+              <p className="text-xs text-neutral-400 font-medium text-center">
+                Pídele a {childName} que lea la palabra resaltada
+              </p>
+            </div>
           )}
 
           {!isChildBlock && currentBlock.reader === 'adult' && (
