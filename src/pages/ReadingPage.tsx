@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { X, Volume2 } from 'lucide-react'
+import { X, Mic, MicOff } from 'lucide-react'
 import { AppShell } from '@/components/AppShell'
 import { ReadingKaraoke } from '@/components/ReadingKaraoke'
 import { ReadingControls } from '@/components/ReadingControls'
 import { SessionSummary } from '@/components/SessionSummary'
 import { LoadingState } from '@/components/LoadingState'
 import { useReadingSession } from '@/hooks/useReadingSession'
+import { useSpeechRecognition } from '@/hooks/useSpeechRecognition'
 import { getStoryWithBlocks } from '@/services/storiesService'
 import { getChild } from '@/services/childrenService'
 import { useAuth } from '@/contexts/AuthContext'
@@ -60,6 +61,17 @@ function ReadingContent({ story, child, userId }: ReadingContentProps) {
     }
   }, [sessionStarted, session])
 
+  const { currentBlock, currentWordIndex, isChildBlock, isChildTurn, showHint, setShowHint } = session
+
+  const blockWords = currentBlock?.text.split(/\s+/).filter(Boolean) ?? []
+  const currentWord = blockWords[currentWordIndex] ?? ''
+
+  const { isListening, isSupported, toggle: toggleMic } = useSpeechRecognition(
+    session.handleNext,
+    currentWord,
+    !isChildBlock && !session.isComplete
+  )
+
   if (session.isComplete && session.summary) {
     return (
       <SessionSummary
@@ -70,7 +82,6 @@ function ReadingContent({ story, child, userId }: ReadingContentProps) {
     )
   }
 
-  const { currentBlock, currentWordIndex, isChildBlock, showHint, setShowHint } = session
   if (!currentBlock) return <LoadingState />
 
   const childName = child?.name ?? 'tu niño'
@@ -83,10 +94,22 @@ function ReadingContent({ story, child, userId }: ReadingContentProps) {
             <p className="text-xs text-neutral-400 font-medium">Leyendo con</p>
             <p className="font-bold text-neutral-800">{childName}</p>
           </div>
-          <div className="flex items-center gap-1 text-xs text-neutral-300 px-3 py-1.5 bg-white rounded-full">
-            <Volume2 className="w-3 h-3" />
-            <span>Sin sonido</span>
-          </div>
+          {isSupported && (
+            <button
+              onClick={toggleMic}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
+                isListening
+                  ? 'bg-primary text-white shadow-button'
+                  : 'bg-white text-neutral-400 shadow-card'
+              }`}
+            >
+              {isListening
+                ? <Mic className="w-3.5 h-3.5 animate-pulse" />
+                : <MicOff className="w-3.5 h-3.5" />
+              }
+              {isListening ? 'Escuchando' : 'Micrófono'}
+            </button>
+          )}
           <button
             onClick={() => navigate(-1)}
             className="ml-2 w-10 h-10 flex items-center justify-center rounded-2xl bg-white shadow-card"
@@ -113,19 +136,25 @@ function ReadingContent({ story, child, userId }: ReadingContentProps) {
               block={currentBlock}
               activeWordIndex={currentWordIndex}
               readWordCount={currentWordIndex}
+              isMicActive={isListening}
             />
           )}
 
           {!isChildBlock && currentBlock.reader === 'adult' && (
             <div className="bg-neutral-50 rounded-2xl px-4 py-3">
-              <p className="text-xs text-neutral-400 font-medium">Lee en voz alta para {childName}</p>
+              <p className="text-xs text-neutral-400 font-medium">
+                {isListening
+                  ? `🎤 El texto avanza automáticamente — las palabras resaltadas las dicen juntos`
+                  : `Lee en voz alta para ${childName} — activa el micrófono para avance automático`
+                }
+              </p>
             </div>
           )}
         </div>
 
         <div className="px-5 pb-8 pt-4 space-y-3">
           <ReadingControls
-            isChildTurn={isChildBlock}
+            isChildTurn={isChildTurn}
             showHint={showHint}
             onNext={session.handleNext}
             onWordOk={session.handleWordOk}

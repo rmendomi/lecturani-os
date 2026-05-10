@@ -1,3 +1,4 @@
+import { Mic } from 'lucide-react'
 import { WordHighlight } from './WordHighlight'
 import type { StoryBlock } from '@/types/database'
 
@@ -5,19 +6,21 @@ interface ReadingKaraokeProps {
   block: StoryBlock
   activeWordIndex: number
   readWordCount: number
+  isMicActive?: boolean
 }
 
-export function ReadingKaraoke({ block, activeWordIndex, readWordCount }: ReadingKaraokeProps) {
+export function ReadingKaraoke({ block, activeWordIndex, readWordCount, isMicActive }: ReadingKaraokeProps) {
   const words = block.text.split(/\s+/).filter(Boolean)
   const childWords = new Set((block.child_words ?? []).map(w => w.toLowerCase()))
 
   const isAdult = block.reader === 'adult'
   const isChild = block.reader === 'child'
+  const activeWord = words[activeWordIndex]?.replace(/[.,!?;:]/g, '')
 
   return (
-    <div className={`rounded-3xl p-5 ${isChild ? 'bg-child/10 border-2 border-child/30' : isAdult ? 'bg-white border border-neutral-100' : 'bg-accent/10 border border-accent/30'}`}>
+    <div className={`rounded-3xl p-5 space-y-3 ${isChild ? 'bg-child/10 border-2 border-child/30' : isAdult ? 'bg-white border border-neutral-100' : 'bg-accent/10 border border-accent/30'}`}>
       {block.reader !== 'adult' && (
-        <div className={`text-xs font-bold mb-3 flex items-center gap-1.5 ${isChild ? 'text-child' : 'text-primary'}`}>
+        <div className={`text-xs font-bold flex items-center gap-1.5 ${isChild ? 'text-child' : 'text-primary'}`}>
           {isChild ? '👦 Turno del niño' : '👨‍👩‍👦 Juntos'}
         </div>
       )}
@@ -31,10 +34,19 @@ export function ReadingKaraoke({ block, activeWordIndex, readWordCount }: Readin
               isActive={idx === activeWordIndex}
               isChildWord={childWords.has(clean)}
               isRead={idx < readWordCount}
+              isMicActive={isMicActive}
             />
           )
         })}
       </p>
+      {isMicActive && activeWord && (
+        <div className="flex items-center gap-2 pt-2 border-t border-neutral-100">
+          <Mic className="w-3.5 h-3.5 text-primary animate-pulse flex-shrink-0" />
+          <span className="text-xs text-neutral-400">
+            Escuchando: <span className="font-bold text-primary">{activeWord}</span>
+          </span>
+        </div>
+      )}
     </div>
   )
 }

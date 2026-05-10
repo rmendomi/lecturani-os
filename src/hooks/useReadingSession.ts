@@ -33,6 +33,8 @@ export function useReadingSession(story: StoryWithBlocks, childId: string, userI
   const isLastWordInBlock = currentWordIndex >= blockWords.length - 1
   const isLastBlock = currentBlockIndex >= story.blocks.length - 1
 
+  const isChildTurn = isChildBlock
+
   const start = useCallback(async () => {
     const session = await createSession(userId, childId, story.id)
     sessionIdRef.current = session.id
@@ -136,6 +138,7 @@ export function useReadingSession(story: StoryWithBlocks, childId: string, userI
     currentBlockIndex,
     currentWordIndex,
     isChildBlock,
+    isChildTurn,
     isLastBlock,
     showHint,
     setShowHint,
