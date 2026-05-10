@@ -44,11 +44,11 @@ El adulto lee TODO el texto sin parar. Algunas palabras dentro de cada párrafo 
 REGLAS OBLIGATORIAS:
 1. USA SOLO reader:"adult". NUNCA uses reader:"child" ni reader:"shared".
 2. Cada bloque es un párrafo narrativo rico que el adulto lee completo, con 3 a 5 oraciones (entre 50 y 90 palabras). Describe el ambiente, los personajes, sus emociones y acciones con detalle y viveza para que el niño pueda imaginar la escena.
-3. En cada bloque puedes marcar 1 o 2 palabras como childWords. Estas palabras DEBEN aparecer EXACTAMENTE igual en el campo text del mismo bloque.
-4. Elige childWords adecuadas al nivel del niño (${data.readingLevel}).
+3. En cada bloque marca entre 2 y 5 palabras CONSECUTIVAS como childWords — deben formar una frase o sintagma corto con sentido dentro del texto (ej: "la montaña", "un pequeño robot", "brillaba con fuerza"). El niño las lee todas juntas de corrido. Estas palabras DEBEN aparecer juntas y EXACTAMENTE igual en el campo text del mismo bloque.
+4. Elige childWords adecuadas al nivel del niño (${data.readingLevel}) y que formen una frase natural que el niño pueda leer de manera fluida.
 5. No todos los bloques necesitan childWords — algunos pueden tener childWords vacío.
 6. syllableSupport: un string por cada childWord con las sílabas separadas por guion (ejemplo: "lu-na", "ca-sa", "ro-bot").
-7. hint: pista corta y amable para si el niño necesita ayuda con esa palabra.
+7. hint: pista corta y amable para si el niño necesita ayuda con la frase.
 8. El cuento debe tener entre 5 y 7 bloques. Cada bloque es una "página" del cuento con una escena completa y evocadora.
 9. El cuento debe ser cálido, entretenido, lleno de imágenes mentales y apropiado para la edad.
 10. Incluye EXACTAMENTE 3 preguntas de comprensión al final.

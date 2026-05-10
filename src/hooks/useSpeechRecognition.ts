@@ -125,13 +125,8 @@ export function useSpeechRecognition(
     else startRecognition()
   }, [startRecognition, stopRecognition])
 
-  // Detener cuando pasa a turno del niño
-  useEffect(() => {
-    if (!active && shouldListenRef.current) {
-      stopRecognition()
-    }
-  }, [active, stopRecognition])
-
+  // Solo detener al desmontar — mientras la sesión esté activa, el reconocimiento
+  // corre continuamente; los resultados se filtran con activeRef en onresult.
   useEffect(() => () => stopRecognition(), [stopRecognition])
 
   return {

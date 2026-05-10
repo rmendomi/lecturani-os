@@ -34,12 +34,20 @@ function ReadingContent({ story, child, userId }: ReadingContentProps) {
     }
   }, [sessionStarted, session])
 
-  const { currentBlock, currentWordIndex, isChildTurn, showHint, setShowHint } = session
+  const { currentBlock, currentWordIndex, childPhraseEndIndex, isChildTurn, showHint, setShowHint } = session
 
   const blockWords = currentBlock?.text.split(/\s+/).filter(Boolean) ?? []
   const currentWord = blockWords[currentWordIndex] ?? ''
-  const currentWordClean = currentWord.replace(/[.,!?;:]/g, '').toLowerCase()
-  const syllablesForWord = currentBlock?.syllable_support?.[currentWordClean] ?? null
+
+  // Sílabas para toda la frase del niño (puede abarcar varias palabras)
+  const phraseHints = blockWords
+    .slice(currentWordIndex, childPhraseEndIndex + 1)
+    .map(w => {
+      const clean = w.replace(/[.,!?;:]/g, '').toLowerCase()
+      const syls = currentBlock?.syllable_support?.[clean]
+      return syls?.map(s => s.replace(/-/g, ' · ')).join('') ?? null
+    })
+    .filter(Boolean) as string[]
 
   const { isListening, isSupported, toggle: toggleMic } = useSpeechRecognition(
     session.handleNext,
@@ -140,14 +148,15 @@ function ReadingContent({ story, child, userId }: ReadingContentProps) {
           <ReadingKaraoke
             block={currentBlock}
             activeWordIndex={currentWordIndex}
+            activePhraseEnd={isChildTurn ? childPhraseEndIndex : undefined}
             readWordCount={currentWordIndex}
             isMicActive={isListening && !isChildTurn}
           />
 
-          {isChildTurn && showHint && syllablesForWord && syllablesForWord.length > 0 && (
+          {isChildTurn && showHint && phraseHints.length > 0 && (
             <div className="bg-yellow-50 border border-yellow-200 rounded-2xl px-4 py-3">
               <p className="text-xl text-yellow-800 font-bold tracking-widest text-center">
-                {syllablesForWord.map(s => s.replace(/-/g, ' · ')).join('  ')}
+                {phraseHints.join('   ')}
               </p>
             </div>
           )}

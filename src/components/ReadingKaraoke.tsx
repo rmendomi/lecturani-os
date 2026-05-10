@@ -5,22 +5,28 @@ import type { StoryBlock } from '@/types/database'
 interface ReadingKaraokeProps {
   block: StoryBlock
   activeWordIndex: number
+  activePhraseEnd?: number   // índice final de la frase del niño (inclusive)
   readWordCount: number
   isMicActive?: boolean
 }
 
-export function ReadingKaraoke({ block, activeWordIndex, readWordCount, isMicActive }: ReadingKaraokeProps) {
+export function ReadingKaraoke({ block, activeWordIndex, activePhraseEnd, readWordCount, isMicActive }: ReadingKaraokeProps) {
   const words = block.text.split(/\s+/).filter(Boolean)
   const isAdult = block.reader === 'adult'
   const isChild = block.reader === 'child'
 
-  // En bloques del niño sin child_words explícitas, todas las palabras son del niño
   const explicitChildWords = block.child_words ?? []
   const childWordsSet = explicitChildWords.length > 0
     ? new Set(explicitChildWords.map(w => w.toLowerCase()))
     : null
 
+  const phraseEnd = activePhraseEnd ?? activeWordIndex
   const activeWord = words[activeWordIndex]?.replace(/[.,!?;:]/g, '')
+
+  // Texto de la frase completa para el indicador de escucha
+  const phraseText = activePhraseEnd !== undefined && activePhraseEnd > activeWordIndex
+    ? words.slice(activeWordIndex, activePhraseEnd + 1).map(w => w.replace(/[.,!?;:]/g, '')).join(' ')
+    : activeWord
 
   return (
     <div className={`rounded-3xl p-5 space-y-3 ${isChild ? 'bg-child/10 border-2 border-child/30' : isAdult ? 'bg-white border border-neutral-100' : 'bg-accent/10 border border-accent/30'}`}>
@@ -35,11 +41,13 @@ export function ReadingKaraoke({ block, activeWordIndex, readWordCount, isMicAct
           const isChildWord = isChild
             ? (childWordsSet ? childWordsSet.has(clean) : true)
             : (childWordsSet?.has(clean) ?? false)
+          // Toda la frase del niño (desde activeWordIndex hasta phraseEnd) está activa a la vez
+          const isActive = idx >= activeWordIndex && idx <= phraseEnd
           return (
             <WordHighlight
               key={idx}
               word={word}
-              isActive={idx === activeWordIndex}
+              isActive={isActive}
               isChildWord={isChildWord}
               isRead={idx < readWordCount}
               isMicActive={isMicActive}
@@ -47,11 +55,11 @@ export function ReadingKaraoke({ block, activeWordIndex, readWordCount, isMicAct
           )
         })}
       </p>
-      {isMicActive && activeWord && (
+      {isMicActive && phraseText && (
         <div className="flex items-center gap-2 pt-2 border-t border-neutral-100">
           <Mic className="w-3.5 h-3.5 text-primary animate-pulse flex-shrink-0" />
           <span className="text-xs text-neutral-400">
-            Escuchando: <span className="font-bold text-primary">{activeWord}</span>
+            Escuchando: <span className="font-bold text-primary">{phraseText}</span>
           </span>
         </div>
       )}
